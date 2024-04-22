@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -11,6 +12,11 @@ public class cubes : MonoBehaviour
     List<GameObject> cubz = new();
 
     [SerializeField] GameObject cube;
+    [SerializeField] Camera mainCamera;
+    private GameObject textObject;
+    [SerializeField] float fontSize = 0.7f;
+
+    [SerializeField] float cubeTextVerticalSpacing = 1f;
     [SerializeField] Vector3 spacing;
     [SerializeField] float heightDifference;
 
@@ -18,8 +24,10 @@ public class cubes : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-    
+
+
         PopulateCubes();
+        PopulateCubesUI();
     }
 
     void PopulateCubes(){
@@ -33,7 +41,7 @@ public class cubes : MonoBehaviour
             GameObject cubeInst = Instantiate(cube,curCubePos,Quaternion.identity);
 
             // Apply random y scaling
-            float rand = Random.Range(1,heightDifference);
+            float rand = Mathf.RoundToInt(Random.Range(1,heightDifference));
             Vector3 scale = cubeInst.transform.localScale;
             cubeInst.transform.localScale = new Vector3(scale.x,scale.y * rand,scale.z);
             
@@ -51,7 +59,32 @@ public class cubes : MonoBehaviour
 
             // Change cubePosition by spacing for the next iteration
             curCubePos += spacing;            
-            cubz.Add(cubeInst);     
+            cubz.Add(cubeInst);                 
+        }
+    }
+
+    void PopulateCubesUI(){
+        textObject = new GameObject("Text Component");
+        GameObject canvasObj = new();
+        foreach(GameObject cube in cubz){
+            GameObject canvasObjInst = Instantiate(canvasObj,canvasObj.transform); 
+
+            Canvas canvas = canvasObjInst.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.worldCamera = mainCamera;
+
+            GameObject textInst = Instantiate(textObject,textObject.transform);
+           
+            canvasObjInst.transform.parent = cube.transform;
+            textInst.transform.parent = canvasObjInst.transform;
+            
+            TextMeshProUGUI textCompInst = textInst.AddComponent<TextMeshProUGUI>();
+            textCompInst.alignment = TextAlignmentOptions.Center;
+            textCompInst.fontSize = fontSize;
+            
+            textCompInst.text = gh.GetHeight(cube).ToString();
+
+            textInst.transform.position += gh.GetTopPosition(cube,cubeTextVerticalSpacing);
             
         }
     }

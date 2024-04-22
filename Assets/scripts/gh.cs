@@ -27,4 +27,18 @@ public class gh{
         return new Bounds(obj.transform.position,Vector3.one);
     }
 
+    public static Vector3 GetTopPosition(GameObject obj, float offset=0f){
+        float y = CalculateBounds(obj).extents.y;
+        return obj.transform.position + obj.transform.up * (y + offset);
+    }
+
+    public static Vector3 GetBottomPosition(GameObject obj, float offset=0f){
+        float y = CalculateBounds(obj).extents.y;
+        return obj.transform.position - obj.transform.up * (y + offset);
+    }
+
+    public static float GetHeight(GameObject obj){
+        return CalculateBounds(obj).extents.y * 2;
+    }
+
 }
