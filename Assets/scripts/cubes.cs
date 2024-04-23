@@ -1,8 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -111,6 +109,22 @@ public class Cubes : MonoBehaviour
         
     }
 
+    public void InsertionSort(){
+        int n = cubz.Count;
+        StartCoroutine(InsertionSortCoroutine(n));
+    }
+
+    public void SelectionSort(){
+        int n = cubz.Count;
+        StartCoroutine(SelectionSortCoroutine(n));
+    }
+
+    public IEnumerator MergeSort(){
+        yield return StartCoroutine(MergeSortCoroutine(cubz));
+        yield return StartCoroutine(ChangeColor(Color.Lerp(Color.white,Color.black,0.5f)));
+        FindObjectOfType<SortedAnimationUI>().PlayAnimation();
+    }
+
     IEnumerator BubbleSortCoroutine(int n){
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n-i-1; j++) {
@@ -121,13 +135,77 @@ public class Cubes : MonoBehaviour
                 }
             }
         }
-        string o = "";
-        foreach(GameObject go in cubz){
-            o += Gh.GetHeight(go) + ", ";
+        yield return StartCoroutine(ChangeColor(Color.green));
+        FindObjectOfType<SortedAnimationUI>().PlayAnimation();
+    }
+
+    IEnumerator InsertionSortCoroutine(int n){
+        GameObject key = null;
+        for(int i = 1; i < n; i++){
+            int j = i;
+            key = cubz[j];
+            while (j > 0 && Gh.GetHeight(cubz[j-1]) > Gh.GetHeight(key)){
+                //Swap here
+                yield return StartCoroutine(SwapAndRotate(j,j-1));
+                j--;
+            }
         }
-        Debug.Log(o);
+        yield return StartCoroutine(ChangeColor(Color.Lerp(Color.green,Color.blue,0.1f)));
+        FindObjectOfType<SortedAnimationUI>().PlayAnimation();
+    }
+
+    IEnumerator SelectionSortCoroutine(int n){
+        for(int i= 0; i< n;i++){
+            for(int j =i+1; j<n;j++){
+                if(Gh.GetHeight(cubz[i]) > Gh.GetHeight(cubz[j])){
+                    // swap here
+                    yield return StartCoroutine(SwapAndRotate(i,j));
+                }
+            }
+        }
+        yield return StartCoroutine(ChangeColor(Color.Lerp(Color.magenta,Color.black,0.1f)));
+        FindObjectOfType<SortedAnimationUI>().PlayAnimation();
+    }
+
+    IEnumerator MergeSortCoroutine(List<GameObject> cubx){
+        int N = cubx.Count;
+        if(N < 2) {
+            yield break; // exit the coroutine completely
+        }
+        int mid = Mathf.FloorToInt(N/2);
+        yield return StartCoroutine(MergeSortCoroutine(cubx.GetRange(0,mid)));
+        yield return StartCoroutine(MergeSortCoroutine(cubx.GetRange(mid,N-mid)));
+        yield return StartCoroutine(MergeCoroutine(cubx,mid,N));
+    }
+
+    IEnumerator MergeCoroutine(List<GameObject> cubx, int mid, int end){
+        List<GameObject> merged = new();
+        (int i, int j) = (0,0);
+        while(i < mid && j < end){
+            if(Gh.GetHeight(cubx[i]) < Gh.GetHeight(cubx[j])){
+                merged.Add(cubx[i++]);
+            }else{
+                merged.Add(cubx[j++]);
+            }
+        }
+
+        while(i < mid){
+            merged.Add(cubx[i++]);
+        }
+        while(j < end){
+            merged.Add(cubx[j++]);
+        }
+        for(int k = 0; k < merged.Count; k++){
+            cubx[k] = merged[k];
+            yield return StartCoroutine(SwapAndRotate(k,k));
+        }
+        yield return null;
+
+    }
+
+    IEnumerator ChangeColor(Color color){
         foreach(GameObject go in cubz){
-            go.GetComponent<Renderer>().material.color = Color.green;
+            go.GetComponent<Renderer>().material.color = color;
             yield return new WaitForSeconds(0.15f);
         }
     }
@@ -137,6 +215,7 @@ public class Cubes : MonoBehaviour
         Material mat2 = cubz[j].GetComponent<Renderer>().material;
         mat1.color = Color.magenta;
         mat2.color = Color.magenta;
+        yield return null;
         yield return StartCoroutine(RotateCoroutine(i,j));
         yield return StartCoroutine(SwapCoroutine(i,j));
         mat1.color = Color.black;
@@ -168,6 +247,5 @@ public class Cubes : MonoBehaviour
         }
         yield return null;
     }
-
 
 }
