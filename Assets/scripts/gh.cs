@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using UnityEngine;
-using UnityEngine.AI;
+using Vector3 = UnityEngine.Vector3;
+using Vector2 = UnityEngine.Vector2;
 public class Gh{
     // Return -1 if o1 is greater, 0 if equal, 1 otherwise
     public static int CompareSize(GameObject o1, GameObject o2){
@@ -70,6 +72,22 @@ public class Gh{
         Vector3 pos2 = o2.transform.position;
         o1.transform.position = new(pos2.x,pos1.y,pos2.z);
         o2.transform.position = new(pos1.x,pos2.y,pos1.z);
+    }
+
+    
+
+    public static void RotateAround(GameObject obj, Vector3 point, Vector3 axis, float angle){
+        obj.transform.RotateAround(point,axis,angle);
+    }
+
+    public static Vector3 GetMidpoint(GameObject o1, GameObject o2){
+        Vector3 v = o1.transform.position;
+        Vector3 u = o2.transform.position;
+        return new Vector3((v.x+u.x)/2,0,(v.z+u.z)/2);
+    }
+
+    public static Vector2 XZ(Vector3 vec){
+        return new Vector2(vec.x,vec.z);
     }
 
 }
