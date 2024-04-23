@@ -46,7 +46,7 @@ public class Cubes : MonoBehaviour
             
             // Create a cube
             GameObject cubeInst = Instantiate(cube,curCubePos,Quaternion.identity);
-            
+
             // Give different height for the instances
             float rand = Random.Range(1, Mathf.RoundToInt(heightDifference));
             Vector3 scale = cubeInst.transform.localScale;
@@ -65,6 +65,7 @@ public class Cubes : MonoBehaviour
             cubeInst.GetComponent<Renderer>().material.color = Color.black;
             cubz.Add(cubeInst);                 
         }
+        Destroy(cube);
     }
 
     void PopulateCubesUI(){
