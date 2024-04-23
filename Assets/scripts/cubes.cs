@@ -10,6 +10,7 @@ public class Cubes : MonoBehaviour
 {
 
     List<GameObject> cubz = new();
+    List<GameObject> cubeUis = new();
 
     [SerializeField] GameObject cube;        
     [SerializeField] Camera mainCamera;
@@ -33,7 +34,10 @@ public class Cubes : MonoBehaviour
     }
 
     void Update(){
-        
+        foreach(GameObject uigo in cubeUis){
+            Vector3 lookDirection = uigo.transform.position - mainCamera.transform.position;
+            uigo.transform.rotation = Quaternion.LookRotation(lookDirection);
+        }
     }
 
 
@@ -91,7 +95,8 @@ public class Cubes : MonoBehaviour
             textCompInst.text = Gh.GetHeight(cube).ToString();
 
             canvasObjInst.transform.position += Gh.GetTopPosition(cube,cubeTextVerticalSpacing);
-            
+
+            cubeUis.Add(canvasObjInst);
         }
     }
 
