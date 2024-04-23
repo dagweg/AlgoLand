@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
-public class gh{
+using UnityEngine.AI;
+public class Gh{
     // Return -1 if o1 is greater, 0 if equal, 1 otherwise
     public static int CompareSize(GameObject o1, GameObject o2){
         Vector3 s1 = CalculateBounds(o1).size;
@@ -39,6 +41,35 @@ public class gh{
 
     public static float GetHeight(GameObject obj){
         return CalculateBounds(obj).extents.y * 2;
+    }
+
+    public static GameObject GetChildWithTag(GameObject obj, string tag){
+        foreach(Transform transform in obj.transform){
+            if(transform.CompareTag(tag)){
+                return transform.gameObject;
+            }
+
+            GameObject child = GetChildWithTag(transform.gameObject,tag);
+            if(child) return child;
+
+        }
+        return null;
+    }
+    public static List<GameObject> GetChildrenWithTag(GameObject obj, string tag){
+        List<GameObject> children = new();
+        foreach(Transform transform in obj.transform){
+            if(transform.CompareTag(tag)){
+                children.Add(transform.gameObject);
+            }
+        }
+        return children;
+    }
+
+    public static void SwapXZPosition(ref GameObject o1, ref GameObject o2){
+        Vector3 pos1 = o1.transform.position;
+        Vector3 pos2 = o2.transform.position;
+        o1.transform.position = new(pos2.x,pos1.y,pos2.z);
+        o2.transform.position = new(pos1.x,pos2.y,pos1.z);
     }
 
 }
