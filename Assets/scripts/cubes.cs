@@ -11,7 +11,6 @@ public class Cubes : MonoBehaviour
 
     List<GameObject> cubz = new();
     List<GameObject> cubeUis = new();
-
     [SerializeField] GameObject cube;        
     [SerializeField] Camera mainCamera;
     private GameObject textObject;
@@ -20,10 +19,6 @@ public class Cubes : MonoBehaviour
     [SerializeField] float cubeTextVerticalSpacing = 1f;
     [SerializeField] Vector3 spacing;
     [SerializeField] float heightDifference;
-
-    // [SerializeField] string CUBE_HEIGHT_TAG = "cube_height";
-
-    Boolean rotateFinished = true;
 
     void Start()
     {
@@ -41,11 +36,12 @@ public class Cubes : MonoBehaviour
     }
 
 
-    void PopulateCubes(){
+    public void PopulateCubes(){
+        DestroyGameObjects(cubz);
+        
+        cube.SetActive(true);
         Vector3 curCubePos = cube.transform.position;
         
-        Bounds cubeBounds = Gh.CalculateBounds(cube);
-
         for(int i = 0; i < 10; i ++){
             
             // Create a cube
@@ -69,10 +65,14 @@ public class Cubes : MonoBehaviour
             cubeInst.GetComponent<Renderer>().material.color = Color.black;
             cubz.Add(cubeInst);                 
         }
-        Destroy(cube);
+
+        cube.SetActive(false);
     }
 
-    void PopulateCubesUI(){
+    public void PopulateCubesUI(){
+
+        DestroyGameObjects(cubeUis);
+
         textObject = new GameObject("Text Component");
         GameObject canvasObj = new();
         foreach(GameObject cube in cubz){
@@ -98,6 +98,11 @@ public class Cubes : MonoBehaviour
 
             cubeUis.Add(canvasObjInst);
         }
+    }
+
+    public void DestroyGameObjects(List<GameObject> list){
+        foreach(GameObject go in list) Destroy(go);
+        list.Clear();
     }
 
     public void BubbleSort() {
