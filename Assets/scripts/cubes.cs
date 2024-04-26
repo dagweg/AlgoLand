@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -17,6 +18,8 @@ public class Cubes : MonoBehaviour
     [SerializeField] float cubeTextVerticalSpacing = 1f;
     [SerializeField] Vector3 spacing;
     [SerializeField] float heightDifference;
+
+    Color defaultColor = Color.black;
 
     void Start()
     {
@@ -120,9 +123,60 @@ public class Cubes : MonoBehaviour
     }
 
     public IEnumerator MergeSort(){
-        yield return StartCoroutine(MergeSortCoroutine(cubz));
+        PrintCubeHeights();
+        yield return StartCoroutine(MergeSortCoroutine(cubz,0,cubz.Count));
         yield return StartCoroutine(ChangeColor(Color.Lerp(Color.white,Color.black,0.5f)));
         FindObjectOfType<SortedAnimationUI>().PlayAnimation();
+        PrintCubeHeights();
+    }
+
+    IEnumerator MergeSortCoroutine(List<GameObject> list, int start, int end){ 
+        if(start >= end - 1) yield break;
+        int mid = (start + end) / 2;
+        yield return StartCoroutine(MergeSortCoroutine(list, start, mid));
+        yield return StartCoroutine(MergeSortCoroutine(list, mid, end));
+        yield return StartCoroutine(Merge(list, start, mid, end));
+    }
+    
+    IEnumerator Merge(List<GameObject> list, int start, int mid, int end){
+        List<GameObject> merged = new(end - start);
+        int left = start;
+        int right = mid;         
+
+        while(left < mid && right < end){
+            if(Gh.GetHeight(list[left]) < Gh.GetHeight(list[right])){
+                merged.Add(CloneGameObject(list[left++]));
+            } else {
+                merged.Add(CloneGameObject(list[right++]));
+            }
+        }
+        
+        while(left < mid){
+            merged.Add(CloneGameObject(list[left++]));
+        }
+        while(right < end){
+            merged.Add(CloneGameObject(list[right++]));
+        }
+        
+        for(int i = 0; i < merged.Count; i++){
+            Vector3 l = list[start+i].transform.position;
+            merged[i].transform.position = new Vector3(l.x,merged[i].transform.position.y,l.z);
+            StartCoroutine(ChangeColor(list[start+i],Color.magenta,0));
+            StartCoroutine(ChangeColor(merged[i],Color.cyan,0));
+            yield return new WaitForSeconds(0.1f);
+            Destroy(list[start+i]);
+            list[start+i] = merged[i];
+            StartCoroutine(ChangeColor(list[start+i],defaultColor,0));
+            StartCoroutine(ChangeColor(merged[i],defaultColor,0));
+        }
+
+        yield return StartCoroutine(ChangeColor(merged,Color.yellow));
+        yield return StartCoroutine(ChangeColor(merged,default,0));
+    }
+    GameObject CloneGameObject(GameObject original){
+        GameObject clone = Instantiate(original);
+        // Copy any other necessary properties from the original to the clone if needed
+        return clone;
     }
 
     IEnumerator BubbleSortCoroutine(int n){
@@ -167,46 +221,23 @@ public class Cubes : MonoBehaviour
         FindObjectOfType<SortedAnimationUI>().PlayAnimation();
     }
 
-    IEnumerator MergeSortCoroutine(List<GameObject> cubx){
-        int N = cubx.Count;
-        if(N < 2) {
-            yield break; // exit the coroutine completely
-        }
-        int mid = Mathf.FloorToInt(N/2);
-        yield return StartCoroutine(MergeSortCoroutine(cubx.GetRange(0,mid)));
-        yield return StartCoroutine(MergeSortCoroutine(cubx.GetRange(mid,N-mid)));
-        yield return StartCoroutine(MergeCoroutine(cubx,mid,N));
-    }
-
-    IEnumerator MergeCoroutine(List<GameObject> cubx, int mid, int end){
-        List<GameObject> merged = new();
-        (int i, int j) = (0,0);
-        while(i < mid && j < end){
-            if(Gh.GetHeight(cubx[i]) < Gh.GetHeight(cubx[j])){
-                merged.Add(cubx[i++]);
-            }else{
-                merged.Add(cubx[j++]);
-            }
-        }
-
-        while(i < mid){
-            merged.Add(cubx[i++]);
-        }
-        while(j < end){
-            merged.Add(cubx[j++]);
-        }
-        for(int k = 0; k < merged.Count; k++){
-            cubx[k] = merged[k];
-            yield return StartCoroutine(SwapAndRotate(k,k));
-        }
-        yield return null;
-
-    }
-
-    IEnumerator ChangeColor(Color color){
+    IEnumerator ChangeColor(Color color, float wait = 0.15f){
         foreach(GameObject go in cubz){
             go.GetComponent<Renderer>().material.color = color;
-            yield return new WaitForSeconds(0.15f);
+            yield return new WaitForSeconds(wait);
+        }
+        yield return null;
+    }
+    
+
+    IEnumerator ChangeColor(GameObject obj, Color color, float wait=0.15f){
+        obj.GetComponent<Renderer>().material.color = color;
+        yield return new WaitForSeconds(wait);
+    }
+    IEnumerator ChangeColor(List<GameObject> objs, Color color, float wait=0.15f){
+        foreach(GameObject obj in objs){
+            obj.GetComponent<Renderer>().material.color = color;
+            yield return new WaitForSeconds(wait);
         }
     }
 
@@ -218,8 +249,8 @@ public class Cubes : MonoBehaviour
         yield return null;
         yield return StartCoroutine(RotateCoroutine(i,j));
         yield return StartCoroutine(SwapCoroutine(i,j));
-        mat1.color = Color.black;
-        mat2.color = Color.black;
+        mat1.color = defaultColor;
+        mat2.color = defaultColor;
     }   
 
     
@@ -248,4 +279,13 @@ public class Cubes : MonoBehaviour
         yield return null;
     }
 
+
+    public void PrintCubeHeights(){
+        string awt = "";
+        foreach(GameObject go in cubz){
+            awt += Gh.GetHeight(go) + ",";
+        }
+        Debug.Log(awt);
+        Debug.Log("");
+    }
 }

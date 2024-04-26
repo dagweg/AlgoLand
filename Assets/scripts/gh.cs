@@ -90,4 +90,10 @@ public class Gh{
         return new Vector2(vec.x,vec.z);
     }
 
+    public static GameObject CloneGameObject(GameObject original){
+        GameObject clone = GameObject.Instantiate(original);
+        // Copy any other necessary properties from the original to the clone if needed
+        return clone;
+    }
+
 }
